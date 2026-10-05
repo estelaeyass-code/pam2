@@ -5,52 +5,81 @@ import {
   View,
   TouchableOpacity,
   SafeAreaView,
-  FlatList
+  ScrollView,
+  StatusBar,
 } from 'react-native';
 
-// Produtos do pedido
-const produtos = [
-  {
-    id: '1',
-    nome: 'Blusa Nude',
-    quantidade: 1,
-    preco: 89.90,
-  },
-  {
-    id: '2',
-    nome: 'Calça Wide Leg',
-    quantidade: 1,
-    preco: 159.90,
-  },
-  {
-    id: '3',
-    nome: 'Bolsa Minimalista',
-    quantidade: 1,
-    preco: 119.90,
-  },
-];
+function converterPreco(valor) {
+  if (typeof valor === 'number') {
+    return valor;
+  }
 
-// FUNÇÃO para calcular o total
-function calcularTotal() {
-  return produtos.reduce(
-    (total, produto) => total + produto.preco * produto.quantidade,
-    0
+  if (!valor) {
+    return 0;
+  }
+
+  return Number(
+    valor
+      .replace('R$', '')
+      .replace(/\./g, '')
+      .replace(',', '.')
+      .trim()
   );
 }
 
-// FUNÇÃO para formatar o preço
 function formatarPreco(valor) {
   return `R$ ${valor.toFixed(2).replace('.', ',')}`;
 }
 
-// FUNÇÃO para mostrar mensagem de entrega
-function mensagemEntrega() {
-  return 'Seu pedido chegará entre 2 e 4 dias úteis.';
-}
+export default function CheckoutScreen({ route, navigation }) {
 
-export default function CheckoutScreen({ navigation }) {
+  const produto = route.params?.produtoSelecionado;
 
-  // Função para voltar para a loja
+  // Caso alguém entre no Checkout sem passar pelo carrinho
+  if (!produto) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="#FFF8FA"
+        />
+
+        <View style={styles.emptyContainer}>
+
+          <View style={styles.emptyCircle}>
+            <Text style={styles.emptyIcon}>♡</Text>
+          </View>
+
+          <Text style={styles.emptyTitle}>
+            Nenhum pedido encontrado
+          </Text>
+
+          <Text style={styles.emptyText}>
+            Escolha uma peça da coleção ROSÉA
+            antes de finalizar sua compra.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.shopButton}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('Home')}
+          >
+            <Text style={styles.shopButtonText}>
+              VOLTAR À LOJA
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const quantidade = produto.quantidade || 1;
+
+  const precoUnitario = converterPreco(produto.preco);
+
+  const total = precoUnitario * quantidade;
+
   function voltarParaLoja() {
     navigation.popToTop();
   }
@@ -58,114 +87,248 @@ export default function CheckoutScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
 
-      <View style={styles.box}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF8FA"
+      />
 
-        {/* ÍCONE DE CONFIRMAÇÃO */}
-        <View style={styles.iconCircle}>
-          <Text style={styles.checkIcon}>✓</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+
+        {/* ================= HEADER ================= */}
+
+        <View style={styles.header}>
+
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backIcon}>‹</Text>
+          </TouchableOpacity>
+
+          <View style={styles.logoContainer}>
+            <Text style={styles.logo}>
+              ROSÉA
+            </Text>
+
+            <Text style={styles.logoSubtitle}>
+              FASHION
+            </Text>
+          </View>
+
+          <View style={styles.headerSpace} />
+
         </View>
 
-        <Text style={styles.title}>
-          Pedido Confirmado!
-        </Text>
+        {/* ================= CONFIRMAÇÃO ================= */}
 
-        <Text style={styles.sub}>
-          Obrigado por comprar na Nude Concept.
-        </Text>
+        <View style={styles.confirmation}>
 
-        {/* RESUMO DO PEDIDO */}
-        <View style={styles.infoCard}>
+          <View style={styles.checkCircle}>
+            <Text style={styles.checkIcon}>
+              ✓
+            </Text>
+          </View>
 
-          <Text style={styles.infoTitle}>
-            RESUMO DO PEDIDO #8492
+          <Text style={styles.title}>
+            Pedido Confirmado!
           </Text>
 
-          {/* FLATLIST */}
-          <FlatList
-            data={produtos}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <View style={styles.produto}>
-                
-                <View>
-                  <Text style={styles.nomeProduto}>
-                    {item.nome}
-                  </Text>
+          <Text style={styles.subtitle}>
+            Obrigada por escolher a ROSÉA.
+          </Text>
 
-                  <Text style={styles.quantidade}>
-                    Quantidade: {item.quantidade}
-                  </Text>
-                </View>
-
-                <Text style={styles.preco}>
-                  {formatarPreco(item.preco)}
-                </Text>
-
-              </View>
-            )}
-          />
-
-          <View style={styles.divider} />
-
-          {/* PAGAMENTO */}
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              Pagamento
-            </Text>
-
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                Pix • Aprovado
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* ENTREGA */}
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              Entrega
-            </Text>
-
-            <Text style={styles.infoValue}>
-              2 a 4 dias úteis
-            </Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* TOTAL */}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>
-              Total
-            </Text>
-
-            <Text style={styles.totalValue}>
-              {formatarPreco(calcularTotal())}
+          <View style={styles.orderNumber}>
+            <Text style={styles.orderNumberText}>
+              PEDIDO #8492
             </Text>
           </View>
 
         </View>
 
-        {/* MENSAGEM GERADA POR FUNÇÃO */}
-        <Text style={styles.entregaMensagem}>
-          {mensagemEntrega()}
-        </Text>
+        {/* ================= CARD DO PRODUTO ================= */}
 
-        {/* BOTÃO DE NAVEGAÇÃO */}
+        <View style={styles.productCard}>
+
+          <View style={styles.productHeader}>
+            <Text style={styles.sectionTitle}>
+              SEU PEDIDO
+            </Text>
+
+            <Text style={styles.productCount}>
+              {quantidade} {quantidade === 1 ? 'item' : 'itens'}
+            </Text>
+          </View>
+
+          <View style={styles.productRow}>
+
+            <View style={styles.productImagePlaceholder}>
+              <Text style={styles.productImageIcon}>
+                ♡
+              </Text>
+            </View>
+
+            <View style={styles.productInfo}>
+
+              <Text style={styles.category}>
+                {produto.categoria || 'MODA'}
+              </Text>
+
+              <Text
+                style={styles.productName}
+                numberOfLines={2}
+              >
+                {produto.nome}
+              </Text>
+
+              <Text style={styles.productDetails}>
+                Tamanho: {produto.tamanho || 'M'}
+              </Text>
+
+              <Text style={styles.productDetails}>
+                Quantidade: {quantidade}
+              </Text>
+
+            </View>
+
+            <Text style={styles.productPrice}>
+              {formatarPreco(precoUnitario)}
+            </Text>
+
+          </View>
+
+          {/* ================= PAGAMENTO ================= */}
+
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+
+            <View>
+              <Text style={styles.infoLabel}>
+                Forma de pagamento
+              </Text>
+
+              <Text style={styles.infoDescription}>
+                Pagamento instantâneo
+              </Text>
+            </View>
+
+            <View style={styles.pixBadge}>
+              <Text style={styles.pixText}>
+                ✓ Pix aprovado
+              </Text>
+            </View>
+
+          </View>
+
+          {/* ================= ENTREGA ================= */}
+
+          <View style={styles.divider} />
+
+          <View style={styles.infoRow}>
+
+            <View>
+              <Text style={styles.infoLabel}>
+                Entrega
+              </Text>
+
+              <Text style={styles.infoDescription}>
+                Frete grátis
+              </Text>
+            </View>
+
+            <Text style={styles.deliveryValue}>
+              2–4 dias úteis
+            </Text>
+
+          </View>
+
+          {/* ================= TOTAL ================= */}
+
+          <View style={styles.divider} />
+
+          <View style={styles.totalRow}>
+
+            <View>
+              <Text style={styles.totalLabel}>
+                Total
+              </Text>
+
+              <Text style={styles.totalDescription}>
+                Valor final da compra
+              </Text>
+            </View>
+
+            <Text style={styles.totalValue}>
+              {formatarPreco(total)}
+            </Text>
+
+          </View>
+
+        </View>
+
+        {/* ================= ENTREGA ================= */}
+
+        <View style={styles.deliveryCard}>
+
+          <View style={styles.deliveryIcon}>
+            <Text style={styles.deliveryIconText}>
+              ♡
+            </Text>
+          </View>
+
+          <View style={styles.deliveryInfo}>
+
+            <Text style={styles.deliveryTitle}>
+              Tudo certo com seu pedido!
+            </Text>
+
+            <Text style={styles.deliveryText}>
+              Sua compra será preparada com carinho
+              e chegará entre 2 e 4 dias úteis.
+            </Text>
+
+          </View>
+
+        </View>
+
+        {/* ================= BOTÃO ================= */}
+
         <TouchableOpacity
-          style={styles.btnInicio}
+          style={styles.homeButton}
           activeOpacity={0.85}
           onPress={voltarParaLoja}
         >
-          <Text style={styles.btnTexto}>
-            Voltar à Loja
+          <Text style={styles.homeButtonText}>
+            VOLTAR PARA A ROSÉA
+          </Text>
+
+          <Text style={styles.homeButtonArrow}>
+            →
           </Text>
         </TouchableOpacity>
 
-      </View>
+        {/* ================= FOOTER ================= */}
+
+        <View style={styles.footer}>
+
+          <Text style={styles.footerLogo}>
+            ROSÉA
+          </Text>
+
+          <Text style={styles.footerText}>
+            Moda para destacar a sua essência.
+          </Text>
+
+          <Text style={styles.footerHeart}>
+            ♡
+          </Text>
+
+        </View>
+
+      </ScrollView>
 
     </SafeAreaView>
   );
@@ -175,212 +338,438 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    backgroundColor: '#fcf8f5',
-    padding: 20,
-    justifyContent: 'center',
+    backgroundColor: '#FFF8FA',
   },
 
-  box: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 28,
+  scrollContent: {
+    paddingBottom: 35,
+  },
+
+  /* ================= HEADER ================= */
+
+  header: {
+    height: 75,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3DEE5',
+    paddingHorizontal: 20,
+    flexDirection: 'row',
     alignItems: 'center',
-
-    shadowColor: '#c9b6a3',
-    shadowOffset: {
-      width: 0,
-      height: 8
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-
-    elevation: 4,
-
-    borderWidth: 1,
-    borderColor: '#f2e9e1',
+    justifyContent: 'space-between',
   },
 
-  iconCircle: {
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFF0F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  backIcon: {
+    color: '#A53F62',
+    fontSize: 34,
+    fontWeight: '300',
+    marginTop: -4,
+  },
+
+  headerSpace: {
+    width: 42,
+  },
+
+  logoContainer: {
+    alignItems: 'center',
+  },
+
+  logo: {
+    color: '#A53F62',
+    fontSize: 23,
+    fontWeight: '900',
+    letterSpacing: 6,
+  },
+
+  logoSubtitle: {
+    color: '#C67A92',
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 3,
+    marginTop: 2,
+  },
+
+  /* ================= CONFIRMAÇÃO ================= */
+
+  confirmation: {
+    alignItems: 'center',
+    paddingTop: 28,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+
+  checkCircle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-
-    backgroundColor: '#f4ede6',
-
-    alignItems: 'center',
+    backgroundColor: '#FCE8EE',
     justifyContent: 'center',
-
-    marginBottom: 16,
-
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e8d9cb',
+    borderColor: '#F2CBD7',
   },
 
   checkIcon: {
-    fontSize: 34,
-    color: '#a88a74',
-    fontWeight: '700',
+    color: '#C85F82',
+    fontSize: 35,
+    fontWeight: '900',
   },
 
   title: {
-    fontSize: 23,
-    fontWeight: '800',
-    color: '#3d3230',
-    marginBottom: 6,
-    letterSpacing: 0.2,
+    color: '#3F2931',
+    fontSize: 25,
+    fontWeight: '900',
+    marginTop: 15,
   },
 
-  sub: {
-    fontSize: 13.5,
-    color: '#a8907c',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 19,
+  subtitle: {
+    color: '#A9828E',
+    fontSize: 12,
+    marginTop: 5,
   },
 
-  infoCard: {
-    backgroundColor: '#fcf8f5',
-    width: '100%',
+  orderNumber: {
+    backgroundColor: '#FCE8EE',
+    borderRadius: 20,
+    paddingHorizontal: 13,
+    paddingVertical: 6,
+    marginTop: 12,
+  },
+
+  orderNumberText: {
+    color: '#A53F62',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+
+  /* ================= PRODUTO ================= */
+
+  productCard: {
+    marginHorizontal: 18,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 18,
-    borderRadius: 16,
-    marginBottom: 15,
-
     borderWidth: 1,
-    borderColor: '#f2e9e1',
+    borderColor: '#F0DCE3',
+    shadowColor: '#B9788C',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
 
-  infoTitle: {
-    color: '#a8907c',
-    fontWeight: '700',
-    fontSize: 11,
-    letterSpacing: 0.8,
-    marginBottom: 12,
-  },
-
-  /* ITEM DA FLATLIST */
-  produto: {
+  productHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
-    paddingVertical: 8,
+    marginBottom: 15,
   },
 
-  nomeProduto: {
-    color: '#4a3e3d',
-    fontSize: 14,
+  sectionTitle: {
+    color: '#A35A73',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.3,
+  },
+
+  productCount: {
+    color: '#B38A97',
+    fontSize: 10,
     fontWeight: '700',
   },
 
-  quantidade: {
-    color: '#a8907c',
-    fontSize: 12,
+  productRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  productImagePlaceholder: {
+    width: 82,
+    height: 100,
+    borderRadius: 14,
+    backgroundColor: '#FCECF1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  productImageIcon: {
+    color: '#C85F82',
+    fontSize: 30,
+  },
+
+  productInfo: {
+    flex: 1,
+    paddingHorizontal: 12,
+  },
+
+  category: {
+    color: '#B05D78',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+
+  productName: {
+    color: '#3F2931',
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 19,
+  },
+
+  productDetails: {
+    color: '#A9828E',
+    fontSize: 10,
     marginTop: 3,
   },
 
-  preco: {
-    color: '#4a3e3d',
+  productPrice: {
+    color: '#A64265',
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '900',
+  },
+
+  /* ================= INFORMAÇÕES ================= */
+
+  divider: {
+    height: 1,
+    backgroundColor: '#F1E1E6',
+    marginVertical: 15,
   },
 
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
-    paddingVertical: 6,
   },
 
   infoLabel: {
-    color: '#8c6d58',
-    fontSize: 13.5,
-    fontWeight: '600',
-  },
-
-  infoValue: {
-    color: '#4a3e3d',
-    fontSize: 13.5,
-    fontWeight: '600',
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: '#f2e9e1',
-    marginVertical: 8,
-  },
-
-  badge: {
-    backgroundColor: '#eaf5ec',
-    borderRadius: 8,
-
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-
-  badgeText: {
-    color: '#3f8557',
+    color: '#4A3038',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 
-  /* TOTAL */
+  infoDescription: {
+    color: '#B28A98',
+    fontSize: 9,
+    marginTop: 3,
+  },
+
+  pixBadge: {
+    backgroundColor: '#FCEEF2',
+    borderRadius: 9,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+  },
+
+  pixText: {
+    color: '#B04F70',
+    fontSize: 9,
+    fontWeight: '900',
+  },
+
+  deliveryValue: {
+    color: '#A64265',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
+  /* ================= TOTAL ================= */
+
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
-    marginTop: 5,
   },
 
   totalLabel: {
-    color: '#3d3230',
-    fontSize: 16,
-    fontWeight: '800',
+    color: '#3F2931',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+
+  totalDescription: {
+    color: '#B99AA6',
+    fontSize: 8,
+    marginTop: 2,
   },
 
   totalValue: {
-    color: '#a88a74',
-    fontSize: 18,
-    fontWeight: '800',
+    color: '#A64265',
+    fontSize: 21,
+    fontWeight: '900',
   },
 
-  /* MENSAGEM */
-  entregaMensagem: {
-    color: '#a8907c',
-    fontSize: 12.5,
-    textAlign: 'center',
-    marginBottom: 15,
+  /* ================= ENTREGA ================= */
+
+  deliveryCard: {
+    marginHorizontal: 18,
+    marginTop: 15,
+    padding: 15,
+    borderRadius: 18,
+    backgroundColor: '#FCECF1',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
-  /* BOTÃO */
-  btnInicio: {
-    backgroundColor: '#a88a74',
+  deliveryIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
 
-    width: '100%',
+  deliveryIconText: {
+    color: '#C85F82',
+    fontSize: 21,
+  },
 
-    paddingVertical: 15,
+  deliveryInfo: {
+    flex: 1,
+  },
 
-    borderRadius: 14,
+  deliveryTitle: {
+    color: '#5B3542',
+    fontSize: 11,
+    fontWeight: '900',
+  },
 
+  deliveryText: {
+    color: '#A47787',
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 3,
+  },
+
+  /* ================= BOTÃO ================= */
+
+  homeButton: {
+    marginHorizontal: 18,
+    marginTop: 20,
+    height: 55,
+    borderRadius: 18,
+    backgroundColor: '#C85F82',
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
 
-    shadowColor: '#a88a74',
+    shadowColor: '#9E3F61',
     shadowOffset: {
       width: 0,
-      height: 4
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-
-    elevation: 2,
+    shadowOpacity: 0.18,
+    shadowRadius: 7,
+    elevation: 4,
   },
 
-  btnTexto: {
-    color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 15,
-    letterSpacing: 0.3,
+  homeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+
+  homeButtonArrow: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    marginLeft: 12,
+  },
+
+  /* ================= FOOTER ================= */
+
+  footer: {
+    marginTop: 25,
+    backgroundColor: '#FCECF1',
+    alignItems: 'center',
+    paddingVertical: 25,
+  },
+
+  footerLogo: {
+    color: '#A53F62',
+    fontSize: 22,
+    fontWeight: '900',
+    letterSpacing: 6,
+  },
+
+  footerText: {
+    color: '#A9828E',
+    fontSize: 10,
+    marginTop: 6,
+  },
+
+  footerHeart: {
+    color: '#C85F82',
+    fontSize: 18,
+    marginTop: 7,
+  },
+
+  /* ================= SEM PEDIDO ================= */
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 35,
+  },
+
+  emptyCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#FCE8EE',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  emptyIcon: {
+    color: '#C85F82',
+    fontSize: 42,
+  },
+
+  emptyTitle: {
+    color: '#3F2931',
+    fontSize: 20,
+    fontWeight: '900',
+    marginTop: 20,
+  },
+
+  emptyText: {
+    color: '#A9828E',
+    fontSize: 12,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+
+  shopButton: {
+    marginTop: 25,
+    backgroundColor: '#C85F82',
+    borderRadius: 18,
+    paddingHorizontal: 25,
+    paddingVertical: 14,
+  },
+
+  shopButtonText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
 
 });
