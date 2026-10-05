@@ -1,166 +1,654 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+} from 'react-native';
 
 export default function DetailsScreen({ route, navigation }) {
-  const { produto } = route.params || { 
-    produto: { 
-      nome: 'Produto', 
-      preco: 'R$ 0,00', 
-      imagem: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=500&q=80' 
-    } 
+  const produto = route.params?.produto || {
+    nome: 'Produto',
+    preco: 'R$ 0,00',
+    categoria: 'Moda',
+    imagem:
+      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=600&q=85',
+  };
+
+  const [tamanhoSelecionado, setTamanhoSelecionado] = useState('M');
+  const [quantidade, setQuantidade] = useState(1);
+  const [favorito, setFavorito] = useState(false);
+
+  const aumentarQuantidade = () => {
+    setQuantidade(quantidade + 1);
+  };
+
+  const diminuirQuantidade = () => {
+    if (quantidade > 1) {
+      setQuantidade(quantidade - 1);
+    }
+  };
+
+  const adicionarAoCarrinho = () => {
+    navigation.navigate('Profile', {
+      produtoSelecionado: {
+        ...produto,
+        tamanho: tamanhoSelecionado,
+        quantidade: quantidade,
+      },
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.card}>
-          <View style={styles.imageWrapper}>
-            <Image 
-              source={{ uri: produto.imagem }} 
-              style={styles.image}
-              resizeMode="contain" // ← MOSTRA A IMAGEM INTEIRA
-            />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF8FA"
+      />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+
+        {/* ================= HEADER ================= */}
+
+        <View style={styles.header}>
+
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backIcon}>‹</Text>
+          </TouchableOpacity>
+
+          <View style={styles.logoContainer}>
+            <Text style={styles.logo}>ROSÉA</Text>
+            <Text style={styles.logoSubtitle}>FASHION</Text>
           </View>
 
-          <View style={styles.content}>
-            <View style={styles.headerRow}>
-              <Text style={styles.title}>{produto.nome}</Text>
-              <Text style={styles.preco}>{produto.preco}</Text>
-            </View>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => setFavorito(!favorito)}
+          >
+            <Text
+              style={[
+                styles.favoriteIcon,
+                favorito && styles.favoriteActive,
+              ]}
+            >
+              {favorito ? '♥' : '♡'}
+            </Text>
+          </TouchableOpacity>
 
-            <View style={styles.divider} />
+        </View>
 
-            <Text style={styles.descricaoTitle}>DETALHES DA PEÇA</Text>
-            <Text style={styles.descricao}>
-              Confeccionada em tecido de tom neutro, toque suave e caimento sofisticado. Ideal para compor looks atemporais.
+        {/* ================= FOTO ================= */}
+
+        <View style={styles.imageSection}>
+
+          <Image
+            source={{ uri: produto.imagem }}
+            style={styles.productImage}
+          />
+
+          <View style={styles.newBadge}>
+            <Text style={styles.newBadgeText}>
+              NOVO
+            </Text>
+          </View>
+
+        </View>
+
+        {/* ================= INFORMAÇÕES ================= */}
+
+        <View style={styles.content}>
+
+          <Text style={styles.category}>
+            {produto.categoria}
+          </Text>
+
+          <View style={styles.titleRow}>
+
+            <Text style={styles.title}>
+              {produto.nome}
             </Text>
 
-            <View style={styles.tagsRow}>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>Frete grátis</Text>
-              </View>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>Troca em 30 dias</Text>
-              </View>
-            </View>
+            <Text style={styles.price}>
+              {produto.preco}
+            </Text>
+
           </View>
+
+          <View style={styles.divider} />
+
+          {/* ================= DESCRIÇÃO ================= */}
+
+          <Text style={styles.sectionTitle}>
+            SOBRE A PEÇA
+          </Text>
+
+          <Text style={styles.description}>
+            Uma peça pensada para trazer elegância,
+            conforto e personalidade ao seu look.
+            Seu design versátil permite criar
+            diferentes combinações para diversas
+            ocasiões.
+          </Text>
+
+          {/* ================= BENEFÍCIOS ================= */}
+
+          <View style={styles.benefits}>
+
+            <View style={styles.benefit}>
+
+              <View style={styles.benefitIcon}>
+                <Text>✓</Text>
+              </View>
+
+              <View>
+                <Text style={styles.benefitTitle}>
+                  Compra segura
+                </Text>
+
+                <Text style={styles.benefitText}>
+                  Pagamento protegido
+                </Text>
+              </View>
+
+            </View>
+
+            <View style={styles.benefit}>
+
+              <View style={styles.benefitIcon}>
+                <Text>↻</Text>
+              </View>
+
+              <View>
+                <Text style={styles.benefitTitle}>
+                  Troca fácil
+                </Text>
+
+                <Text style={styles.benefitText}>
+                  Até 30 dias
+                </Text>
+              </View>
+
+            </View>
+
+            <View style={styles.benefit}>
+
+              <View style={styles.benefitIcon}>
+                <Text>♡</Text>
+              </View>
+
+              <View>
+                <Text style={styles.benefitTitle}>
+                  Frete grátis
+                </Text>
+
+                <Text style={styles.benefitText}>
+                  Para todo o Brasil
+                </Text>
+              </View>
+
+            </View>
+
+          </View>
+
+          {/* ================= TAMANHO ================= */}
+
+          <View style={styles.sizeHeader}>
+
+            <Text style={styles.sectionTitle}>
+              TAMANHO
+            </Text>
+
+            <Text style={styles.sizeGuide}>
+              Guia de tamanhos
+            </Text>
+
+          </View>
+
+          <View style={styles.sizes}>
+
+            {['PP', 'P', 'M', 'G', 'GG'].map((tamanho) => {
+
+              const selecionado =
+                tamanhoSelecionado === tamanho;
+
+              return (
+                <TouchableOpacity
+                  key={tamanho}
+                  activeOpacity={0.8}
+                  style={[
+                    styles.sizeButton,
+                    selecionado &&
+                      styles.sizeButtonActive,
+                  ]}
+                  onPress={() =>
+                    setTamanhoSelecionado(tamanho)
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.sizeText,
+                      selecionado &&
+                        styles.sizeTextActive,
+                    ]}
+                  >
+                    {tamanho}
+                  </Text>
+                </TouchableOpacity>
+              );
+
+            })}
+
+          </View>
+
+          {/* ================= QUANTIDADE ================= */}
+
+          <View style={styles.quantitySection}>
+
+            <Text style={styles.sectionTitle}>
+              QUANTIDADE
+            </Text>
+
+            <View style={styles.quantityControl}>
+
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={diminuirQuantidade}
+              >
+                <Text style={styles.quantityButtonText}>
+                  −
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.quantityText}>
+                {quantidade}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={aumentarQuantidade}
+              >
+                <Text style={styles.quantityButtonText}>
+                  +
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
         </View>
+
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity 
+      {/* ================= BOTÃO ================= */}
+
+      <View style={styles.bottomBar}>
+
+        <TouchableOpacity
           activeOpacity={0.85}
-          style={styles.btnAdicionar}
-          onPress={() => navigation.navigate('Profile', { produtoSelecionado: produto })}
+          style={styles.addToCartButton}
+          onPress={adicionarAoCarrinho}
         >
-          <Text style={styles.btnAdicionarTexto}>Adicionar ao Carrinho</Text>
+          <Text style={styles.addToCartText}>
+            ADICIONAR AO CARRINHO
+          </Text>
+
+          <Text style={styles.arrow}>
+            →
+          </Text>
         </TouchableOpacity>
+
       </View>
+
     </SafeAreaView>
   );
 }
 
+/* =====================================================
+   ESTILOS
+===================================================== */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fcf8f5' },
-  scrollContent: { padding: 16, paddingBottom: 8 },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: '#c9b6a3',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#f2e9e1',
+
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF8FA',
   },
-  imageWrapper: {
-    backgroundColor: '#f4ede6',
+
+  scrollContent: {
+    paddingBottom: 110,
+  },
+
+  /* ================= HEADER ================= */
+
+  header: {
+    height: 75,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3DEE5',
+  },
+
+  headerButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFF0F4',
     justifyContent: 'center',
-    padding: 20, // ← ESPAÇO AO REDOR DA IMAGEM
+    alignItems: 'center',
   },
-  image: {
+
+  backIcon: {
+    color: '#9E3F61',
+    fontSize: 34,
+    fontWeight: '300',
+    marginTop: -4,
+  },
+
+  favoriteIcon: {
+    color: '#9E3F61',
+    fontSize: 23,
+  },
+
+  favoriteActive: {
+    color: '#C44770',
+  },
+
+  logoContainer: {
+    alignItems: 'center',
+  },
+
+  logo: {
+    color: '#A53F62',
+    fontSize: 23,
+    fontWeight: '900',
+    letterSpacing: 6,
+  },
+
+  logoSubtitle: {
+    color: '#C67A92',
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 3,
+    marginTop: 2,
+  },
+
+  /* ================= IMAGEM ================= */
+
+  imageSection: {
+    margin: 18,
+    height: 430,
+    borderRadius: 24,
+    backgroundColor: '#F9EDF1',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+
+  productImage: {
     width: '100%',
-    height: 400, // ← ALTURA MAIOR PARA IMAGEM INTEIRA
-    resizeMode: 'contain', // ← GARANTE QUE A IMAGEM INTEIRA APAREÇA
+    height: '100%',
+    resizeMode: 'cover',
   },
+
+  newBadge: {
+    position: 'absolute',
+    top: 15,
+    left: 15,
+    backgroundColor: '#B9476C',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+
+  newBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+
+  /* ================= CONTEÚDO ================= */
+
   content: {
-    padding: 22,
+    paddingHorizontal: 20,
   },
-  headerRow: {
+
+  category: {
+    color: '#B05D78',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 7,
+  },
+
+  titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 15,
   },
+
   title: {
-    fontSize: 21,
-    fontWeight: '800',
-    color: '#3d3230',
     flex: 1,
-    marginRight: 12,
-    lineHeight: 26,
-  },
-  preco: {
-    fontSize: 19,
-    color: '#a88a74',
+    color: '#3F2931',
+    fontSize: 23,
+    lineHeight: 29,
     fontWeight: '800',
   },
-  divider: { height: 1, backgroundColor: '#f2e9e1', marginVertical: 18 },
-  descricaoTitle: {
+
+  price: {
+    color: '#A64265',
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#EFDCE3',
+    marginVertical: 20,
+  },
+
+  sectionTitle: {
+    color: '#4A3038',
     fontSize: 11,
-    color: '#a8907c',
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    marginBottom: 8,
+    fontWeight: '900',
+    letterSpacing: 1.5,
   },
-  descricao: {
-    color: '#7a6a68',
-    fontSize: 13.5,
+
+  description: {
+    color: '#8E6D78',
+    fontSize: 13,
     lineHeight: 21,
-    marginBottom: 18,
+    marginTop: 10,
   },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#fcf8f5',
+
+  /* ================= BENEFÍCIOS ================= */
+
+  benefits: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    marginTop: 22,
+    padding: 15,
     borderWidth: 1,
-    borderColor: '#f2e9e1',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderColor: '#F1DCE3',
   },
-  tagText: {
-    color: '#8c6d58',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  footer: {
-    padding: 16,
-    paddingTop: 8,
-    backgroundColor: '#fcf8f5',
-    borderTopWidth: 1,
-    borderTopColor: '#f2e9e1',
-  },
-  btnAdicionar: {
-    backgroundColor: '#a88a74',
-    paddingVertical: 16,
-    borderRadius: 14,
+
+  benefit: {
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#a88a74',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 2,
+    marginVertical: 6,
   },
-  btnAdicionarTexto: {
-    color: '#ffffff',
+
+  benefitIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FCE8EE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 11,
+  },
+
+  benefitIconText: {
+    color: '#A53F62',
+  },
+
+  benefitTitle: {
+    color: '#4A3038',
+    fontSize: 11,
     fontWeight: '800',
-    fontSize: 15,
-    letterSpacing: 0.3,
   },
+
+  benefitText: {
+    color: '#B28A98',
+    fontSize: 10,
+    marginTop: 2,
+  },
+
+  /* ================= TAMANHO ================= */
+
+  sizeHeader: {
+    marginTop: 25,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  sizeGuide: {
+    color: '#B05D78',
+    fontSize: 10,
+    textDecorationLine: 'underline',
+  },
+
+  sizes: {
+    flexDirection: 'row',
+    marginTop: 12,
+    gap: 9,
+  },
+
+  sizeButton: {
+    width: 49,
+    height: 43,
+    borderRadius: 13,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E6CCD5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  sizeButtonActive: {
+    backgroundColor: '#C85F82',
+    borderColor: '#C85F82',
+  },
+
+  sizeText: {
+    color: '#8E5E70',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
+  sizeTextActive: {
+    color: '#FFFFFF',
+  },
+
+  /* ================= QUANTIDADE ================= */
+
+  quantitySection: {
+    marginTop: 25,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  quantityControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E6CCD5',
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+
+  quantityButton: {
+    width: 38,
+    height: 38,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  quantityButtonText: {
+    color: '#A53F62',
+    fontSize: 20,
+  },
+
+  quantityText: {
+    color: '#4A3038',
+    fontSize: 13,
+    fontWeight: '800',
+    minWidth: 25,
+    textAlign: 'center',
+  },
+
+  /* ================= BARRA FINAL ================= */
+
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 18,
+    borderTopWidth: 1,
+    borderTopColor: '#F1DCE3',
+  },
+
+  addToCartButton: {
+    height: 55,
+    backgroundColor: '#C85F82',
+    borderRadius: 18,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#9E3F61',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 7,
+    elevation: 4,
+  },
+
+  addToCartText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+
+  arrow: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    marginLeft: 12,
+  },
+
 });
